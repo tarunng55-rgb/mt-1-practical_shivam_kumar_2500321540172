@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Library Management System</h1>
+
+<input type="number" id="id" placeholder="ID">
+<input type="text" id="title" placeholder="Title">
+<input type="text" id="author" placeholder="Author">
+<input type="text" id="category" placeholder="Category">
+
+<button onclick="addBook()">Add Book</button>
+
+<h2>Book List</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Category</th>
+        <th>Action</th>
+    </tr>
+
+    <tbody id="result"></tbody>
+</table>
+
+<script>
+
+async function showBooks() {
+    let res = await fetch('/books');
+    let books = await res.json();
+
+    let data = "";
+
+    books.forEach(book => {
+        data += `<tr>
+            <td>${book.id}</td>
+            <td>${book.title}</td>
+            <td>${book.author}</td>
+            <td>${book.category}</td>
+            <td>
+                <button onclick="updateBook(${book.id})">Update</button>
+                <button onclick="deleteBook(${book.id})">Delete</button>
+            </td>
+        </tr>`;
+    });
+
+    document.getElementById("result").innerHTML = data;
+}
+
+async function addBook() {
+    let book = {
+        id: Number(document.getElementById("id").value),
+        title: document.getElementById("title").value,
+        author: document.getElementById("author").value,
+        category: document.getElementById("category").value
+    };
+
+    await fetch('/books', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(book)
+    });
+
+    showBooks();
+}
+
+async function updateBook(id) {
+    let title = prompt("Enter new title");
+    let author = prompt("Enter new author");
+    let category = prompt("Enter new category");
+
+    if (!title || !author || !category) {
+        return;
+    }
+
+    await fetch('/books/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, author, category})
+    });
+
+    showBooks();
+}
+
+async function deleteBook(id) {
+    await fetch('/books/' + id, {
+        method: 'DELETE'
+    });
+
+    showBooks();
+}
+
+showBooks();
+
+</script>
+
+</body>
+</html>
